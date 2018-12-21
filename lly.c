@@ -174,6 +174,7 @@ ZEND_METHOD(sub_class, call_hello)
     zend_string_release(out);
     zend_string_release(out1);
 
+// php_var_dump // var_dump
 //	zend_print_zval_r(&ret,0);//print_r
 
 //遍历数组 下面有通过宏的方式遍历 建议用下面方式
@@ -465,13 +466,57 @@ PHP_FUNCTION(mytest112)
     zval *s=zend_hash_str_find_ptr(ht,ZEND_STRL("b22"));
     if(a==Z_PTR_P(s))php_printf("ddd");
     efree(Z_PTR_P(s));
-    zend_array_destroy(ht);//释放
+    zend_array_destroy(ht);//释放 OR
+//    FREE_HASHTABLE(ht);
+//    efree(a);
 }
 
+
+//资源列表句柄
+static int le_result;
+ZEND_RSRC_DTOR_FUNC(myfile_dtor)
+{//统一释放资源回调函数
+    FILE *fp = (FILE *) res->ptr;
+    fclose(fp);
+}
+PHP_FUNCTION(mytest113)
+{
+    FILE *fp=fopen("/tmp/aa","ab");
+    zval *zv;
+    //把资源注册进PHP
+    zv = zend_list_insert(fp, le_result);
+    RETURN_ZVAL(zv,0,0);
+}
+
+PHP_FUNCTION(mytest114)
+{
+    zval *result;
+    ZEND_PARSE_PARAMETERS_START(1,1)
+            Z_PARAM_RESOURCE(result)
+    ZEND_PARSE_PARAMETERS_END_EX(RETURN_FALSE);
+    FILE *f;
+    //根据zend_resource得到实际的资源句柄
+    if ((f = (FILE *)zend_fetch_resource(Z_RES_P(result), "result", le_result)) == NULL)
+    {
+        RETURN_FALSE;
+    }
+    fwrite(ZEND_STRL("DDDD"),1,f);
+    //把资源从资源列表中删除
+    if (zend_list_delete(Z_RES_P(result)) == FAILURE) {
+        RETURN_FALSE;
+    }
+    RETURN_TRUE;
+}
 
 //以下为模块的钩子函数定义
 PHP_MINIT_FUNCTION(lly) //加载扩展时调用
 {
+    //建立一个用于存储的资源用的资源列表 第一个参数每次请求完成回调 第二个参数PHP退出后回调
+    le_result = zend_register_list_destructors_ex(myfile_dtor,NULL,"standard-c-file", module_number);
+
+    //注册常量
+    REGISTER_STRING_CONSTANT("TTT","DDD", CONST_CS | CONST_PERSISTENT);
+
     //初始化线程安全的全局变量
     ZEND_INIT_MODULE_GLOBALS(lly, php_lly_init_globals, NULL);
 
@@ -566,6 +611,8 @@ const zend_function_entry lly_functions[] = {
 	PHP_FE(confirm_lly_compiled,	NULL)		/* For testing, remove later. */
 	PHP_FE(mytest111,	NULL)		/* For testing, remove later. */
 	PHP_FE(mytest112,	NULL)		/* For testing, remove later. */
+    PHP_FE(mytest113,	NULL)		/* For testing, remove later. */
+    PHP_FE(mytest114,	NULL)		/* For testing, remove later. */
 	PHP_FE_END	/* Must be the last line in lly_functions[] */
 };
 /* }}} */
