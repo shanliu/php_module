@@ -1,0 +1,24 @@
+# 放到PHP源码根目录 Clion 代码提示需要
+cmake_minimum_required(VERSION 3.12)
+project(php C)
+
+aux_source_directory(./Zend ZEND_SRC)
+aux_source_directory(./main MAIN_SRC)
+aux_source_directory(./main/streams MAIN_STREAMS_SRC)
+aux_source_directory(./TSRM TSRM_SRC)
+aux_source_directory(./ext/standard EXT_STANDARD_SRC)
+#aux_source_directory(./win32 WIN32_SRC)
+aux_source_directory(./sapi/cli CLI_SRC)
+
+include_directories(./ ./Zend ./TSRM ./main ./main/streams ./ext/standard) # = -I
+
+add_subdirectory(ext/lly)
+add_subdirectory(ext/orm)
+add_subdirectory(ext/dom)
+
+
+add_custom_target(php COMMAND ./configure --enable-debug && make && sudo make install WORKING_DIRECTORY ${PROJECT_SOURCE_DIR})
+
+#add_executable(libev libevent_c.cpp) # main
+#target_link_libraries(libev -levent) # = -L
+add_executable(_php ${ZEND_SRC} ${MAIN_SRC} ${MAIN_STREAMS_SRC} ${TSRM_SRC} ${EXT_STANDARD_SRC} ${CLI_SRC}) # tips
