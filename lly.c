@@ -114,10 +114,8 @@ ZEND_METHOD(parent_class, __construct)
 //PG(v);//核心变量 php_core_globals 如:$_GET $_POST .. PG(http_globals)[TRACK_VARS_*],INI信息
 //SG(v);//SAPI变量 请求数据 sapi_globals_struct 如:HTTP原始请求变量 sapi_request_info
 //CG(v);//编译变量 compiler_globals 可以得到函数表,类表
-//EX(v);//当前执行数据 zend_execute_data 可以获取到当前执行的函数,类,OPCODE等
-//OG(v);//输出变量 output_globals
-
-
+//EX(v);//当前执行数据 zend_execute_data 可以获取到当前执行的函数,类,OPCODE等 EG()元素
+//OG(v);//输出变量 output_globals 结构:ZEND_BEGIN_MODULE_GLOBALS(output)
 
 ZEND_METHOD(sub_class, call_hello)
 {
@@ -472,7 +470,7 @@ PHP_FUNCTION(mytest112)
 }
 
 
-//资源列表句柄
+//返回资源列表句柄
 static int le_result;
 ZEND_RSRC_DTOR_FUNC(myfile_dtor)
 {//统一释放资源回调函数
@@ -487,7 +485,7 @@ PHP_FUNCTION(mytest113)
     zv = zend_list_insert(fp, le_result);
     RETURN_ZVAL(zv,0,0);
 }
-
+//使用资源句柄参数
 PHP_FUNCTION(mytest114)
 {
     zval *result;
@@ -507,6 +505,97 @@ PHP_FUNCTION(mytest114)
     }
     RETURN_TRUE;
 }
+
+
+void list_dtr(void * ptr){
+    //释放指向的字符串的内存
+   efree(*((char**)ptr));
+}
+void list_call(void * ptr){
+    //对每个元素进行回调
+    php_printf(*((char**)ptr));
+}
+
+//内置列表使用
+PHP_FUNCTION(mytest115)
+{
+//  备注:指针是可以内存拷贝的
+//    char * t1 =(char*) malloc(4);
+//    strlcpy(t1,"aaa",4);
+//    void * t2 = malloc(sizeof(char *));
+//    memcpy(t2,&t1,sizeof(char *));
+//    char ** t3=(char**)t2;
+//    printf("%s",*t3);
+//    free(t1);
+//    free(t2);
+
+    //注意: llist 会对添加元素进行内存拷贝
+    //以下是将存储字符串指针,复杂数据类型时可放结构体(非结构体指针)
+    zend_llist l;
+    zend_llist_init(&l,sizeof(char *),list_dtr,0);
+    char * a=(char*)emalloc(sizeof(char)*10);
+    strlcpy(a,"aaa",4);
+    zend_llist_add_element(&l,&a);
+    zend_llist_apply(&l,list_call);//
+    zend_llist_destroy(&l);
+}
+
+
+
+//堆栈使用
+PHP_FUNCTION(mytest116)
+{
+    zend_stack st;
+    zend_stack_init(&st, sizeof(char *));
+    char *t="fasdfas0";
+    zend_stack_push(&st,&t);
+    char *t1="fasdfas1";
+    zend_stack_push(&st,&t1);//进栈
+    void * outt=zend_stack_top(&st);//取栈顶
+    char ** b=(char**)outt;
+    zend_stack_del_top(&st);//出栈
+    zend_stack_del_top(&st);//出栈
+    printf("%s,%d",*b,zend_stack_count(&st));
+    zend_stack_destroy(&st);
+}
+
+//字符串 数字转换
+PHP_FUNCTION(mytest117)
+{
+    int decpt,sign;
+    //mode
+    //0 1 保留有效数字并转为字符串
+    //2 四舍五入取整数
+    //3 指定小数点后位数并四舍五入取整数(ndigits 指定数量)
+    //4 保留有效数字(ndigits 指定数量)
+    //5 好像和3类似(ndigits 指定数量)
+    //decpt 整数位数 为有效数字 这个值为9999
+    char *p = zend_dtoa(500.1121545, 6, 4, &decpt, &sign, NULL);
+    printf("%s,%d,%d\n",p,decpt,sign);
+
+    //字符串转浮点数
+    double ss=zend_bin_strtod("11",NULL);
+    printf("%f\n",ss);
+
+    zend_freedtoa(p);
+
+
+    //注意:字符串跟整数转换用 zend_long.h 里面的宏
+
+    //整数转字符串
+    char t[5];
+    ZEND_LTOA(1000,t,5);
+    printf("%s\n",t);
+
+    //字符串转整数
+    int a;
+    ZEND_ATOL(a,"888");
+    printf("%d\n",a);
+    printf("%lld\n",ZEND_STRTOL("1000",NULL,2));
+}
+
+
+
 
 //以下为模块的钩子函数定义
 PHP_MINIT_FUNCTION(lly) //加载扩展时调用
@@ -613,6 +702,9 @@ const zend_function_entry lly_functions[] = {
 	PHP_FE(mytest112,	NULL)		/* For testing, remove later. */
     PHP_FE(mytest113,	NULL)		/* For testing, remove later. */
     PHP_FE(mytest114,	NULL)		/* For testing, remove later. */
+    PHP_FE(mytest115,	NULL)		/* For testing, remove later. */
+    PHP_FE(mytest116,	NULL)		/* For testing, remove later. */
+    PHP_FE(mytest117,	NULL)		/* For testing, remove later. */
 	PHP_FE_END	/* Must be the last line in lly_functions[] */
 };
 /* }}} */
