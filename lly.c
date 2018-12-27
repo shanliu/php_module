@@ -20,15 +20,31 @@
  *. 全局变量
  */
 
-
-//线程安全全局变量 以下二选一
-//1
+//线程安全全局变量和INI使用
+//1 需要一个默认模块变量结构 由 ZEND_BEGIN_MODULE_GLOBALS 定义 一般在头文件中
+// ZEND_BEGIN_MODULE_GLOBALS(lly)
+//2 根据上面定义结构定义全局变量
 ZEND_DECLARE_MODULE_GLOBALS(lly)
+//3 定义INI修改时回调函数 可无
+PHP_INI_MH(OnUpdateSeparator) {
+    LLY_G(global_string) = ZSTR_VAL(new_value);
+    return SUCCESS;
+}
+//4 关联INI 全局变量关系 及设置默认值
+PHP_INI_BEGIN()
+    STD_PHP_INI_ENTRY("global_string","",  PHP_INI_ALL, OnUpdateString, global_string, zend_lly_globals, lly_globals)
+PHP_INI_END();
+//5 在初始化时注册 REGISTER_INI_ENTRIES 关闭时需要取消注册
+//5 未关联INI的全局变量通过回调函数初始化
 static void php_lly_init_globals(zend_lly_globals *aaa_globals)
 {
-    aaa_globals->global_string = "dddddd";
+    aaa_globals->no_ini_key = 1000;
 }
-//2
+static void php_lly_remove_globals(zend_lly_globals *aaa_globals)
+{
+    //移除时调用
+}
+//php_lly_init_globals 和 php_lly_remove_globals的默认注册调用
 //static PHP_GINIT_FUNCTION(lly)
 //{
 //	lly_globals->global_string = "ccccc";
@@ -37,8 +53,6 @@ static void php_lly_init_globals(zend_lly_globals *aaa_globals)
 //{
 //
 //}
-
-
 
 
 //接口
@@ -606,8 +620,13 @@ PHP_MINIT_FUNCTION(lly) //加载扩展时调用
     //注册常量
     REGISTER_STRING_CONSTANT("TTT","DDD", CONST_CS | CONST_PERSISTENT);
 
-    //初始化线程安全的全局变量
-    ZEND_INIT_MODULE_GLOBALS(lly, php_lly_init_globals, NULL);
+    //全局变量注册和初始化
+    //初始化INI关联的全局变量
+    REGISTER_INI_ENTRIES();
+    //未关联INI的全局变量注册
+    ZEND_INIT_MODULE_GLOBALS(lly, php_lly_init_globals, php_lly_remove_globals);
+
+
 
     //模块加载时候可以进行类注册 函数会自动注册
 
@@ -648,9 +667,9 @@ PHP_MINIT_FUNCTION(lly) //加载扩展时调用
  */
 PHP_MSHUTDOWN_FUNCTION(lly)
 {
-	/* 释放INI的相关内存
+	//  取消注册INI 释放INI的相关内存
 	UNREGISTER_INI_ENTRIES();
-	*/
+
 	return SUCCESS;
 }
 /* }}} */

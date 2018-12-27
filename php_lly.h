@@ -44,6 +44,7 @@ extern zend_module_entry lly_module_entry;
 // CPP里可以 __thread 方式 但最好还是保持PHP C的风格
 ZEND_BEGIN_MODULE_GLOBALS(lly)
 	char *global_string;
+	char *no_ini_key;
 ZEND_END_MODULE_GLOBALS(lly)
 //定义全局变量的获取宏,方便使用
 #define LLY_G(v) ZEND_MODULE_GLOBALS_ACCESSOR(lly, v)
