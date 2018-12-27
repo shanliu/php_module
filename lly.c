@@ -87,7 +87,7 @@ static zend_function_entry ab_class_ce_entry[] = {
 	PHP_FE_END
 };
 
-
+//类函数定义
 ZEND_METHOD(parent_class, hello)
 {
 	zend_string* str;
@@ -108,7 +108,9 @@ ZEND_METHOD(parent_class, hello)
 
 
 
-//类函数定义
+//扩展编写时的注释的写法
+/** {{{ proto parent_class::__construct()
+*/
 ZEND_METHOD(parent_class, __construct)
 {
     zend_string* str;
@@ -120,7 +122,7 @@ ZEND_METHOD(parent_class, __construct)
 
    // php_printf("%s",ZSTR_VAL(str));
 }
-
+/* }}} */
 
 
 //!!! 内部调用返回值需要先申请存放数据空间
