@@ -608,7 +608,12 @@ PHP_FUNCTION(mytest117)
 PHP_FUNCTION(mytest118)
 {
     //全局变量
-    php_printf("%s,%d",LLY_G(global_string),LLY_G(no_ini_key));
+    php_printf("%s,%d\n",LLY_G(global_string),LLY_G(no_ini_key));
+    //内部字符串
+    php_printf("%s\n",ZSTR_VAL(ZSTR_CHAR('A')));
+    php_printf("%s\n",ZSTR_VAL(ZSTR_KNOWN(ZEND_STR_FILE)));
+    
+
 }
 
 
