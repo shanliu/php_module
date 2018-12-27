@@ -32,7 +32,7 @@ PHP_INI_MH(OnUpdateSeparator) {
 }
 //4 关联INI 全局变量关系 及设置默认值
 PHP_INI_BEGIN()
-    STD_PHP_INI_ENTRY("global_string","",  PHP_INI_ALL, OnUpdateString, global_string, zend_lly_globals, lly_globals)
+    STD_PHP_INI_ENTRY("global_string","testval",  PHP_INI_ALL, OnUpdateString, global_string, zend_lly_globals, lly_globals)
 PHP_INI_END();
 //5 在初始化时注册 REGISTER_INI_ENTRIES 关闭时需要取消注册
 //5 未关联INI的全局变量通过回调函数初始化
@@ -139,12 +139,6 @@ ZEND_METHOD(sub_class, call_hello)
 	//返回==&val
     zend_call_method_with_0_params(getThis(), sub_class_ce, NULL, "hello", &val);
     zend_string_release(Z_STR(val));//字符串用完,需要手动清理掉
-
-
-
-    //全局变量
-	//php_printf("%s",LLY_G(global_string));
-
 
 
 	//函数调用 内外函数均可
@@ -608,6 +602,13 @@ PHP_FUNCTION(mytest117)
     printf("%lld\n",ZEND_STRTOL("1000",NULL,2));
 }
 
+//全局变量获取
+PHP_FUNCTION(mytest118)
+{
+    //全局变量
+    php_printf("%s,%d",LLY_G(global_string),LLY_G(no_ini_key));
+}
+
 
 
 
@@ -724,6 +725,7 @@ const zend_function_entry lly_functions[] = {
     PHP_FE(mytest115,	NULL)		/* For testing, remove later. */
     PHP_FE(mytest116,	NULL)		/* For testing, remove later. */
     PHP_FE(mytest117,	NULL)		/* For testing, remove later. */
+    PHP_FE(mytest118,	NULL)		/* For testing, remove later. */
 	PHP_FE_END	/* Must be the last line in lly_functions[] */
 };
 /* }}} */
