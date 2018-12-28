@@ -613,6 +613,12 @@ PHP_FUNCTION(mytest118)
     php_printf("%s\n",ZSTR_VAL(ZSTR_CHAR('A')));
     php_printf("%s\n",ZSTR_VAL(ZSTR_KNOWN(ZEND_STR_FILE)));
 
+    char * ds=INI_STR("request_order");//INI值获取,如果没注册到全局变量可以这样得到
+    if(ds)php_printf("%s",ds);
+
+
+
+
 }
 
 PHP_FUNCTION(mytest119)
