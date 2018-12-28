@@ -612,10 +612,40 @@ PHP_FUNCTION(mytest118)
     //内部字符串
     php_printf("%s\n",ZSTR_VAL(ZSTR_CHAR('A')));
     php_printf("%s\n",ZSTR_VAL(ZSTR_KNOWN(ZEND_STR_FILE)));
-    
 
 }
 
+PHP_FUNCTION(mytest119)
+{
+    char *filename="./lly.c";
+    //内核读取文件方法
+    zend_file_handle handle;
+    zend_stream_open(filename, &handle);
+    char * data;
+    size_t len;
+    zend_stream_fixup(&handle,&data,&len);
+    //php_printf("%s",data);
+    zend_file_handle_dtor(&handle);
+
+    //扩展里流处理
+    php_stream *stream;
+    stream = php_stream_open_wrapper(filename, "rb",REPORT_ERRORS,NULL);
+    if (!stream) {RETURN_FALSE;}
+    size_t offset=0;//偏移
+    if (offset != 0 && php_stream_seek(stream, offset, ((offset > 0) ? SEEK_SET : SEEK_END)) < 0) {
+        php_error_docref(NULL, E_WARNING, "Failed to seek to position " ZEND_LONG_FMT " in the stream", offset);
+        php_stream_close(stream);
+        RETURN_FALSE;
+    }
+    zend_string* out;
+    zend_long maxlen = (ssize_t) PHP_STREAM_COPY_ALL;
+    if ((out = php_stream_copy_to_mem(stream, maxlen, 0)) != NULL) {
+        RETVAL_STR(out);
+    } else {
+        RETVAL_EMPTY_STRING();
+    }
+    php_stream_close(stream);
+}
 
 
 
@@ -733,6 +763,7 @@ const zend_function_entry lly_functions[] = {
     PHP_FE(mytest116,	NULL)		/* For testing, remove later. */
     PHP_FE(mytest117,	NULL)		/* For testing, remove later. */
     PHP_FE(mytest118,	NULL)		/* For testing, remove later. */
+    PHP_FE(mytest119,	NULL)		/* For testing, remove later. */
 	PHP_FE_END	/* Must be the last line in lly_functions[] */
 };
 /* }}} */
