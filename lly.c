@@ -654,7 +654,8 @@ PHP_FUNCTION(mytest119)
 }
 
 
-
+//FPM 下 INIT 在未创建worker进程前初始化
+//FPM在多进程模式下执行 创建共享内存必须加进程间的锁 可通过原子操作实现自旋锁解决
 //以下为模块的钩子函数定义
 PHP_MINIT_FUNCTION(lly) //加载扩展时调用
 {
