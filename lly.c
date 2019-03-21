@@ -137,6 +137,8 @@ ZEND_METHOD(sub_class, call_hello)
 {
 
 
+
+
 	zval val;
 	//返回==&val
     zend_call_method_with_0_params(getThis(), sub_class_ce, NULL, "hello", &val);
@@ -183,7 +185,7 @@ ZEND_METHOD(sub_class, call_hello)
     zend_string_release(out1);
 
 // php_var_dump // var_dump
-//	zend_print_zval_r(&ret,0);//print_r
+	zend_print_zval_r(&ret,0);//print_r
 
 //遍历数组 下面有通过宏的方式遍历 建议用下面方式
 //	int i=0, count = zend_hash_num_elements(Z_ARRVAL(ret));
@@ -206,6 +208,14 @@ ZEND_METHOD(sub_class, call_hello)
 
 ZEND_METHOD(sub_class, hello)
 {
+    zend_bool t=0;
+    ZEND_PARSE_PARAMETERS_START(0, 1)
+            Z_PARAM_OPTIONAL
+            Z_PARAM_BOOL(t)
+    ZEND_PARSE_PARAMETERS_END_EX(RETURN_FALSE);
+
+    php_printf("%d",t);
+
 	RETURN_STRING("DDDD");
 }
 //类函数定义
@@ -457,6 +467,12 @@ PHP_FUNCTION(mytest111)
 
 void print_hashtable(zend_array * ht){
     //打印hashtable 方法 前提是hashtable里存放的是zval 调试用
+    //如果不行 可以用gdb p ht.arData[?] 分别打印
+    //或使用GDB循环
+    // set $i=ht.nNumOfElements
+    // while($i--)
+    // p (char*) ht.arData[$i].key.val
+    //end
     zval a;
     ZVAL_ARR(&a,ht);
     zend_print_zval_r(&a,0);
@@ -609,12 +625,14 @@ PHP_FUNCTION(mytest118)
 {
     //全局变量
     php_printf("%s,%d\n",LLY_G(global_string),LLY_G(no_ini_key));
-    //内部字符串
-    php_printf("%s\n",ZSTR_VAL(ZSTR_CHAR('A')));
-    php_printf("%s\n",ZSTR_VAL(ZSTR_KNOWN(ZEND_STR_FILE)));
+    //内部字符串,老版本好像PHP不支持
+    //php_printf("%s\n",ZSTR_VAL(ZSTR_CHAR('A')));
+    //php_printf("%s\n",ZSTR_VAL(ZSTR_KNOWN(ZEND_STR_FILE)));
 
     char * ds=INI_STR("request_order");//INI值获取,如果没注册到全局变量可以这样得到
     if(ds)php_printf("%s",ds);
+
+
 
 
 
