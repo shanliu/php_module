@@ -712,7 +712,8 @@ PHP_MINIT_FUNCTION(lly) //加载扩展时调用
 
 	//实现接口 注册
 	zend_class_implements(parent_class_ce TSRMLS_CC, 1, i_myinterface_ce);
-
+	//注意：接口继承使用的是类实现的方法,如下示例
+	//zend_class_implements(parent_class_ce,1,zend_ce_iterator);
 	//定义类属性
 	zend_declare_property_string(parent_class_ce, "public_var", strlen("public_var"),"dddd", ZEND_ACC_PUBLIC TSRMLS_CC);
 //	zend_declare_property_null(parent_class_ce, "public_var", strlen("public_var"), ZEND_ACC_PUBLIC TSRMLS_CC);
