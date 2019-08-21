@@ -8,6 +8,7 @@
 #include "php_ini.h"
 #include "ext/standard/info.h"
 #include "php_lly.h"
+#include "ext/standard/php_array.h"
 //务必设置 export USE_ZEND_ALLOC=0 禁用zend内存管理器,方便前期开发可以发现问题
 //使用 valgrind 查找内存泄漏时 务必设置 export ZEND_DONT_UNLOAD_MODULES=1 使扩展加载正常
 //CLI调试:valgrind --tool=memcheck --num-callers=30 --log-file=php.log --leak-check=full --show-reachable=yes php script.php
@@ -280,6 +281,13 @@ PHP_FUNCTION(confirm_lly_compiled) // 等于 zif_confirm_lly_compiled(_zend_exec
 	//参数:类,对象,属性名,属性名长度,不存在属性等是否不出错误提示,__get函数时zval存放
 	p=zend_read_property(parent_class_ce,&object_zval,"public_var",strlen("public_var"),1,NULL TSRMLS_DC);
 	php_printf(ZSTR_VAL(Z_STR_P(p)));
+	//如果p指针的值这时候需要被其他地方使用,千万别直接用p此变量,千万记得ZVAL_DUP() 拷贝出来用
+	
+	
+	
+	
+	
+	
 
 //	RETURN_ZVAL(&object_zval,1,1);
 
@@ -463,6 +471,42 @@ PHP_FUNCTION(mytest111)
     zend_print_zval_r(&ret1,0);
     php_printf("%d",zend_hash_num_elements(Z_ARR(ret1)));
     zend_array_destroy(Z_ARR(ret1));
+    
+    
+    
+    //数组合并操作
+    zval rules;
+	array_init(&rules);
+	zval val;
+	ZVAL_STRING(&val,"sss1111111111111111");
+	zend_hash_next_index_insert(Z_ARR(rules),&val);
+    zend_hash_str_add(Z_ARR(rules),ZEND_STRL("FADSFA"),&val);
+
+    zval ttt;
+    ZVAL_DUP(&ttt,&rules);
+    zval_ptr_dtor(&rules);
+
+
+
+    zval grs;
+    array_init(&grs);
+    zval val1;
+    ZVAL_STRING(&val1,"sss1");
+    zend_hash_next_index_insert(Z_ARR(grs),&val1);
+    zend_hash_str_add(Z_ARR(grs),ZEND_STRL("FADSFA"),&val1);
+
+    zval ccc;
+    array_init(&ccc);
+    php_array_merge(Z_ARR(ccc),Z_ARR(grs));
+    php_array_merge(Z_ARR(ccc),Z_ARR(ttt));//后值覆盖前值,索引值不会覆盖
+    zend_hash_index_del(Z_ARR(ccc),0);
+
+    zval_ptr_dtor(&grs);
+    zval_ptr_dtor(&ttt);
+
+    zend_print_zval_r(&ccc,0);
+	
+    
 
 }
 
