@@ -182,8 +182,9 @@ ZEND_METHOD(sub_class, call_hello)
 	zend_string * out=zend_string_init("aaa",strlen("aaa"),0);
 	zend_string * out1=zend_string_init("aaaaaa",strlen("aaaaaa"),0);
 	add_next_index_str(&ret,out);
+	//!!!!!注意:add_系列辅助函数添加时会根据键名的类型添加字符串键名还是数字键名,当为数字时使用zend_hash系列函数添加将导致PHP脚本无法访问对应的值
 	add_assoc_str(&ret,"bbb",out1);
-
+        //如果你无法确定添加键名是否为纯数字时,请使用add_函数往数组添加数据
     zend_string_release(out);
     zend_string_release(out1);
 
