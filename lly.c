@@ -402,6 +402,9 @@ void aaa(zval *as){
 
 PHP_FUNCTION(mytest111)
 {
+	
+	//当外部使用[] 作为参数传递时,扩展内得到的为不可变数组,需要使用SEPARATE_ARRAY(zval *zval);进行拆离.
+	
     //数组(hashtable)的使用
 	zval ret;
 	array_init(&ret);
