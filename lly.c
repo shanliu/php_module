@@ -12,6 +12,7 @@
 //务必设置 export USE_ZEND_ALLOC=0 禁用zend内存管理器,方便前期开发可以发现问题
 //使用 valgrind 查找内存泄漏时 务必设置 export ZEND_DONT_UNLOAD_MODULES=1 使扩展加载正常
 //CLI调试:valgrind --tool=memcheck --num-callers=30 --log-file=php.log --leak-check=full --show-reachable=yes php script.php
+//完整cli示例 ZEND_DONT_UNLOAD_MODULES=1 USE_ZEND_ALLOC=0 valgrind --leak-check=full --suppressions=/path/to/suppression --show-reachable=yes --track-origins=yes ~/myphp/bin/php -dextension=pib.so /tmp/foo.php
 /*
  *. 函数定义 入参-出参 调用
  *. 类[属性 方法 (修饰)]定义 继承 接口 静态方法 调用 参数 调用
